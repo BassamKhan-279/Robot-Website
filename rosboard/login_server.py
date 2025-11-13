@@ -179,6 +179,48 @@ async def logout(request):
     print("[Logout] User logged out.")
     raise web.HTTPFound("/login")
 
+# Insert this function into your login_server.py
+async def reset_password(request):
+    """
+    Handles the password reset submission by calling the Supabase API directly.
+    The client-side JS passes the access_token in the form body.
+    """
+    try:
+        data = await request.post()
+        access_token = data.get("access_token")
+        new_password = data.get("password")
+
+        if not access_token or not new_password:
+            return web.Response(text="Missing token or password.", status=400)
+        
+        # NOTE: Supabase uses the access token to identify and update the user.
+        # We perform the password change via the standard PUT /user endpoint, 
+        # using the provided access_token for authentication.
+
+        url = f"{AUTH_BASE}/user"
+        headers = {
+            "apikey": SUPABASE_ANON_KEY,
+            "Authorization": f"Bearer {access_token}",
+            "Content-Type": "application/json"
+        }
+        payload = {"password": new_password}
+
+        async with request.app["http_client"].put(url, headers=headers, json=payload) as resp:
+            if resp.status == 200:
+                print(f"[Reset] ✅ Password updated via token.")
+                # We return a simple text success message for the JS to display
+                return web.Response(text="Password successfully reset.", status=200)
+            else:
+                error_data = await resp.json()
+                error_msg = error_data.get('msg', 'Invalid or expired token. Please request a new link.')
+                print(f"[Reset] ❌ Failed to update password: {error_msg}")
+                # We return a simple text error message for the JS to display
+                return web.Response(text=f"Reset failed: {error_msg}", status=resp.status)
+
+    except Exception as e:
+        print(f"[Reset] Internal error: {e}")
+        return web.Response(text="An internal server error occurred during reset.", status=500)
+
 async def register_page(request):
     register_path = WEB_DIR / "register.html"
     if request.method == "POST":
@@ -361,14 +403,6 @@ async def delete_user(request):
             print(f"[Admin] ❌ Failed to delete auth user {user_id}: {await resp.text()}")
             return web.json_response({"error": "Failed to delete user"}, status=resp.status)
 
-# The handler for profile_page is removed.
-# async def profile_page(request): ...
-
-# The handler for change_own_password is removed.
-# async def change_own_password(request): ...
-
-# The handler for delete_own_account is removed.
-# async def delete_own_account(request): ...
 
 # ---------- Middleware ----------
 @web.middleware
@@ -417,11 +451,9 @@ def main():
     app.router.add_get("/forgot-password", forgot_password_page)
     app.router.add_post("/forgot-password", forgot_password_page)
     
-    # Removed SECURE APP PAGES (Camera, Odom)
 
     # Admin Page Route
     app.router.add_get("/admin", admin_page)
-    # Removed Profile Route: app.router.add_get("/profile", profile_page)
 
     # API Routes
     app.router.add_get("/api/get_session", get_user_session)
@@ -429,10 +461,6 @@ def main():
     app.router.add_post("/api/users", admin_create_user) 
     app.router.add_put("/api/users/{id}/role", update_user_role)
     app.router.add_delete("/api/users/{id}", delete_user)
-
-    # Removed Self-serve API Routes (Password Change and Account Delete)
-    # app.router.add_post("/api/user/password", change_own_password)
-    # app.router.add_delete("/api/user", delete_own_account)
 
     app.router.add_static("/static/", path=str(WEB_DIR / "static"), name="static")
 
