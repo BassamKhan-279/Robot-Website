@@ -16,12 +16,11 @@ from aiohttp_session import SimpleCookieStorage, get_session
 # ---------- Configuration Constants ----------
 USER_FACING_PORT = 8000
 ROSBOARD_URL = "http://localhost:8888"
-# Defined here for absolute redirect in middleware
 LOGIN_SERVER_URL = f"http://localhost:{USER_FACING_PORT}" 
 
 # ---------- Paths ----------
 BASE_DIR = pathlib.Path(__file__).parent
-WEB_DIR = BASE_DIR / "web"
+WEB_DIR = BASE_DIR / "web" # Confirmed correct path: rosboard/web/
 
 # ---------- Supabase Config  ----------
 SUPABASE_URL = "https://pxlbmyygaiqevnbcrnmj.supabase.co"
@@ -169,7 +168,7 @@ async def index_page(request):
     """After login, redirects to the main ROSBoard URL."""
     session = await get_session(request)
     if "user" not in session:
-        raise web.HTTPFound(f"{LOGIN_SERVER_URL}/login") # Use absolute path here too
+        raise web.HTTPFound(f"{LOGIN_SERVER_URL}/login")
     # Redirect directly to ROSBoard's root URL (localhost:8888)
     raise web.HTTPFound(ROSBOARD_URL)
 
@@ -179,7 +178,7 @@ async def logout(request):
     session = await get_session(request)
     session.invalidate()
     print("[Logout] User logged out.")
-    raise web.HTTPFound(f"{LOGIN_SERVER_URL}/login") # Use absolute path on final redirect
+    raise web.HTTPFound(f"{LOGIN_SERVER_URL}/login")
 
 # 🟢 CORRECTED HANDLER NAME FOR CONSISTENCY
 async def reset_password_handler(request):
@@ -306,17 +305,32 @@ async def get_user_session(request):
         return web.json_response(session["user"])
     return web.json_response({"error": "Not logged in"}, status=401)
 
-# In login_server.py
-
+# 🚨 FINAL FIX HANDLER 🚨
 async def admin_page(request):
-    """Serves the admin.html page, but only to admins."""
+    """
+    Serves the admin.html page with explicit content type, 
+    after verifying admin privileges.
+    """
     await require_admin(request) # Protect this page
-    
+
+    # Path points to rosboard/web/admin.html (as confirmed by the user)
     admin_path = WEB_DIR / "admin.html"
     
-    # 🚨 REVERTED FIX: Use the native aiohttp FileResponse
-    # If the file path is correct, this should serve the file properly.
-    return web.FileResponse(admin_path)
+    try:
+        # CRITICAL FIX: Read the file content and set the MIME type manually
+        with open(admin_path, 'r', encoding='utf-8') as f:
+            content = f.read()
+        
+        return web.Response(
+            text=content,
+            content_type='text/html' # Force the browser to render as HTML
+        )
+    except FileNotFoundError:
+        # This handles the case if the file is missing in the /web/ directory
+        return web.Response(text=f"Admin HTML file not found at: {admin_path}", status=500)
+    except Exception as e:
+        print(f"Error serving admin page: {e}")
+        return web.Response(text="Error processing admin page content.", status=500)
 
 async def get_users(request):
     """API for admins to get a list of all users."""
