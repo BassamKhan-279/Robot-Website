@@ -1,15 +1,15 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    
     <title>Admin Panel - Autonomous Oil Palm Harvesting Robot System</title>
 
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    
+    <link href="/static/css/material-icons.css" rel="stylesheet"> 
     <link rel="stylesheet" href="/static/css/material.indigo-blue.min.css" />
-    <link href="/static/css/index.css" media="all" rel="stylesheet" type="text/css">
-    
+    <link href="/static/css/index.css" rel="stylesheet" type="text/css"> 
+
     <script src="/static/js/jquery-3.1.0.min.js"></script>
     <script src="/static/js/material.min.js" defer></script>
 
@@ -25,15 +25,16 @@
 
         /* 🚨 AESTHETIC FIX: Content Area and Container Overrides 🚨 */
         main.mdl-layout__content { background: #202020 !important; }
-        .admin-content { padding: 24px; color: #f0f0f0; } /* Text color for main content */
         
-        /* FIX: Ensure container and section backgrounds are dark */
+        /* 1. FIX TEXT COLOR: Set general text color to light */
+        .admin-content { padding: 24px; color: #f0f0f0; } 
+        
+        /* 2. FIX INNER CONTAINER BACKGROUND & TEXT COLOR */
         .container, .admin-section {
             background: #303030; 
             color: #f0f0f0; /* Text color for content inside the box */
-            border-radius: 5px; padding: 20px 40px; 
+            border-radius: 5px; padding: 20px; 
             margin-bottom: 20pt; box-shadow: 0 4px 12px rgba(0,0,0,0.2); 
-            /* Ensure widths are manageable */
             width: 95%; max-width: 900px;
         }
         
@@ -50,8 +51,13 @@
         .mdl-textfield__input { color: #f0f0f0; border-bottom-color: rgba(255,255,255,0.3); }
         .mdl-textfield__label { color: rgba(255,255,255,0.5); }
         .users-table select { background: #303030; color: #f0f0f0; border: 1px solid #505050; padding: 4px; border-radius: 4px; }
-        /* Reset label color for form groups that might inherit dark text */
         .form-group label { color: #c0c0c0; } 
+        
+        /* Remaining general MDL styles */
+        .role-admin { background: #f44336; color: white; }
+        .role-user { background: #4caf50; color: white; }
+        .delete-btn { color: #ff5252; min-width: auto; }
+        .delete-btn:hover { background: rgba(255, 82, 82, 0.1); }
     </style>
 </head>
 <body>
@@ -64,11 +70,6 @@
                 </div>
                 <span class="mdl-layout-title">Admin Panel</span>
                 <div class="mdl-layout-spacer"></div>
-                <nav class="mdl-navigation">
-                    <a class="mdl-navigation__link" href="http://localhost:8888" style="color: white;">
-                        <i class="material-icons">home</i> Back to Main
-                    </a>
-                </nav>
             </div>
         </header>
         
