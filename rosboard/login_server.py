@@ -14,8 +14,8 @@ import aiohttp_session
 from aiohttp_session import SimpleCookieStorage, get_session
 
 # ---------- Configuration Constants ----------
-USER_FACING_PORT = 8000 # The new port for the Login/Admin server
-ROSBOARD_URL = "http://localhost:8888" # The destination URL after successful login
+USER_FACING_PORT = 8000
+ROSBOARD_URL = "http://localhost:8888"
 
 # ---------- Paths ----------
 BASE_DIR = pathlib.Path(__file__).parent
@@ -29,7 +29,7 @@ SUPABASE_ROLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS
 POSTGREST_BASE = f"{SUPABASE_URL}/rest/v1"
 AUTH_BASE = f"{SUPABASE_URL}/auth/v1"
 
-# --- Helper HTTP functions  ---
+# --- Helper HTTP functions ---
 def _supabase_headers():
     return {
         "apikey": SUPABASE_ROLE_KEY,
@@ -149,6 +149,8 @@ async def login_page(request):
             else:
                 print(f"[Login] ⚠️ No profile found for {email}, defaulting to 'user' role.")
 
+            # CRITICAL: This is where the session is created with the role.
+            # If the DB role is 'admin', it must be stored here.
             session_data = await get_session(request)
             session_data["user"] = {"email": email, "role": role, "id": user_id}
             
@@ -345,13 +347,20 @@ async def admin_create_user(request):
         return web.json_response({"error": f"Auth user creation failed: {error_msg}"}, status=auth_status)
     
     print(f"[Admin] ✅ Auth user created: {email}")
+    
+    # CRITICAL FIX: Extract user ID robustly
     auth_user_id = auth_result.get('id')
-
+    
     if not auth_user_id:
-        print(f"[Admin] ❌ CRITICAL: Could not get ID from auth result: {auth_result}")
-        return web.json_response({"error": "Could not get user ID from auth result"}, status=500)
+        # Fallback 1: Check for UUID inside a nested 'user' object (for older responses)
+        auth_user_id = auth_result.get('user', {}).get('id')
+        
+    if not auth_user_id:
+        print(f"[Admin] ❌ CRITICAL: Could not extract user ID from auth result: {auth_result}")
+        return web.json_response({"error": "Failed to retrieve user ID from authentication service for profile creation."}, status=500)
 
     profile_payload = {"email": email, "role": role, "id": auth_user_id}
+    
     profile_status, profile_created = await sb_post(
         request.app["http_client"], "profiles", profile_payload
     )
@@ -403,7 +412,7 @@ async def delete_user(request):
             return web.json_response({"error": "Failed to delete user"}, status=resp.status)
 
 
-# 🟢 NEW CORS MIDDLEWARE (Fixes the redirect loop)
+# 🟢 CORS MIDDLEWARE (Fixes the redirect loop)
 @web.middleware
 async def cors_middleware(request, handler):
     # This URL is the origin we allow to make requests (your ROSBoard server)
@@ -457,8 +466,6 @@ async def require_login_middleware(request, handler):
 # ---------- Main  ----------
 def main():
     print(f"[LoginServer] 🔧 Starting Login/Admin server on port {USER_FACING_PORT}...")
-    
-    # We remove all ROSBoard spawning and proxy logic here
     
     app = web.Application(middlewares=[
         # 🟢 NEW: Register the CORS middleware first
