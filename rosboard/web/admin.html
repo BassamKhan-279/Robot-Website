@@ -123,7 +123,7 @@
 
             <div id="topics-nav-ros-title" class="topics-nav-title">ROBOT 2</div>
             
-            <a class="mdl-navigation__link" href="http://localhost:8888/index.html" style="display: flex; align-items: center;">
+            <a class="mdl-navigation__link" href="http://localhost:8888" style="display: flex; align-items: center;">
               <i class="material-icons" style="padding-right: 16px;">home</i>
               Home
             </a>
@@ -174,6 +174,7 @@
     </div>
 
     
+    <script type="text/javascript" src="/static/js/jquery-3.1.0.min.js"></script>
     <script type="text/javascript" src="/static/js/material.min.js" defer></script>
     
     <script>
@@ -182,6 +183,7 @@
             const messageBox = document.getElementById("message-box");
             const createUserForm = document.getElementById("create-user-form");
             const ROSBOARD_URL = 'http://localhost:8888'; // Define the ROSBoard URL for error redirects
+            const LOGIN_SERVER_URL = 'http://localhost:8000'; // Define the Login Server URL
 
             // --- Show a message ---
             function showMessage(text, type = 'success') {
@@ -280,7 +282,7 @@
                 }
             }
             
-            // --- 5. Handle Create User Form  ---
+            // --- 5. Handle Create User Form (FIXED RESPONSE HANDLING) ---
             createUserForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const email = document.getElementById('new-email').value;
@@ -293,13 +295,19 @@
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ email, password, role })
                     });
-                    const newUser = await response.json();
+                    
+                    const responseJson = await response.json(); // Expects an array or error JSON
+                    
                     if (response.ok) {
+                        // FIX: Extract the user object from the array [0]
+                        const newUser = responseJson[0]; 
+                        
                         showMessage('User created successfully!', 'success');
                         appendUserToTable(newUser); 
                         createUserForm.reset(); 
                     } else {
-                        throw new Error(newUser.error || 'Failed to create user');
+                        // Handle server-side errors returned in the JSON body
+                        throw new Error(responseJson.error || 'Failed to create user');
                     }
                 } catch (error) {
                     showMessage(`Error: ${error.message}`, 'error');
@@ -309,9 +317,16 @@
             // --- 6. Load the dynamic sidebar links ---
             const userLinksContainer = document.getElementById("user-links");
             fetch('/api/get_session')
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        window.location.href = `${LOGIN_SERVER_URL}/login`;
+                        return null; 
+                    }
+                    return response.json();
+                })
                 .then(user => {
-                    if (!user || !user.email) { window.location.href = '/login'; return; }
+                    if (!user) return; // Stop if redirect happened
+
                     let linksHtml = '';
                     if (user.role === 'admin') {
                         linksHtml += `
@@ -330,7 +345,7 @@
                         </a>`;
                     userLinksContainer.innerHTML = linksHtml;
                 })
-                .catch(() => window.location.href = '/login');
+                .catch(() => window.location.href = `${LOGIN_SERVER_URL}/login`);
 
             // Initial load of user table
             fetchUsers();
