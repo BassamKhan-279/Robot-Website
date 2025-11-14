@@ -1,69 +1,78 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Register - Autonomous Oil Palm Harvesting Robot System
-</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <style>
-    body {
-      background: url('/static/images/background.jpg') no-repeat center center fixed;
-      background-size: cover;
-      font-family: Arial, sans-serif;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      margin: 0;
-      color: #fff;
-    }
-    .register-box {
-      background: rgba(0, 0, 0, 0.75);
-      padding: 40px;
-      border-radius: 12px;
-      text-align: center;
-      width: 300px;
-    }
-    input, select, button {
-      width: 90%;
-      margin: 10px 0;
-      padding: 10px;
-      border: none;
-      border-radius: 6px;
-    }
-    button {
-      background: #43a047;
-      color: white;
-      cursor: pointer;
-    }
-    button:hover {
-      background: #66bb6a;
-    }
-    a {
-      color: #90caf9;
-      text-decoration: none;
-    }
-    label {
-      display: block;
-      margin-top: 10px;
-      font-size: 0.9em;
-      text-align: left;
-      padding-left: 5%;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <title>Register - Autonomous Oil Palm Harvesting Robot System</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            background: url('/static/images/background.jpg') no-repeat center center fixed;
+            background-size: cover;
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            color: #fff;
+        }
+        .register-box {
+            background: rgba(0, 0, 0, 0.75);
+            padding: 40px;
+            border-radius: 12px;
+            text-align: center;
+            width: 300px; /* Explicit width for the box */
+        }
+        /* FIX: Increased input width and removed margin-bottom from previous fix attempts */
+        input, select, button {
+            width: 90%;
+            margin: 10px auto; /* Center inputs horizontally */
+            display: block; /* Make inputs take up their own line */
+            padding: 10px;
+            border: none;
+            border-radius: 6px;
+        }
+        button {
+            background: #43a047;
+            color: white;
+            cursor: pointer;
+            margin-top: 20px; /* Added spacing above the button */
+        }
+        button:hover {
+            background: #66bb6a;
+        }
+        a {
+            color: #90caf9;
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 15px; /* Spacing below the button */
+        }
+        label {
+            display: block;
+            margin-top: 10px;
+            font-size: 0.9em;
+            text-align: left;
+            padding-left: 5%;
+        }
+    </style>
 </head>
 <body>
-    <div class="registration-box-or-container">
+    <div class="register-box">
         <h2>Create New Account</h2>
         <form method="POST" action="/register">
-            <input type="email" ...>
-            <input type="password" ...>
-            <select name="role">...</select>
+            <input type="email" name="email" placeholder="Email" required />
+            <input type="password" name="password" placeholder="Password (min 6 chars)" required />
+            
+            <label for="role-select">Choose a role:</label>
+            <select name="role" id="role-select" required>
+                <option value="user">User</option>
+                <option value="admin">Admin</option>
+            </select>
+
             <button type="submit">Register</button>
         </form>
         <p><a href="/login">Back to login</a></p>
     </div>
-
-    </body>
+</body>
 </html>
