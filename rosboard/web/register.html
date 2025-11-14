@@ -2,7 +2,12 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Register - ROSBoard</title>
+  <title>Register - ROSBoard</ti<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Register - Autonomous Oil Palm Harvesting Robot System
+</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
@@ -71,3 +76,73 @@
   </div>
 </body>
 </html>
+tle>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      background: url('/static/images/background.jpg') no-repeat center center fixed;
+      background-size: cover;
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      color: #fff;
+    }
+    .register-box {
+      background: rgba(0, 0, 0, 0.75);
+      padding: 40px;
+      border-radius: 12px;
+      text-align: center;
+      width: 300px;
+    }
+    input, select, button {
+      width: 90%;
+      margin: 10px 0;
+      padding: 10px;
+      border: none;
+      border-radius: 6px;
+    }
+    button {
+      background: #43a047;
+      color: white;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #66bb6a;
+    }
+    a {
+      color: #90caf9;
+      text-decoration: none;
+    }
+    label {
+      display: block;
+      margin-top: 10px;
+      font-size: 0.9em;
+      text-align: left;
+      padding-left: 5%;
+    }
+  </style>
+</head>
+<body>
+  <div class="register-box">
+    <h2>Create New Account</h2>
+    <form method="POST" action="/register">
+      <input type="email" name="email" placeholder="Email" required /><br/>
+      <input type="password" name="password" placeholder="Password (min 6 chars)" required /><br/>
+      
+      <label for="role-select">Choose a role:</label>
+      <select name="role" id="role-select" required>
+        <option value="user">User</option>
+        <option value="admin">Admin</option>
+      </select><br/>
+
+      <button type="submit">Register</button>
+    </form>
+    <p><a href="/login">Back to login</a></p>
+  </div>
+</body>
+</html>
+
