@@ -1,20 +1,20 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Panel - Autonomous Oil Palm Harvesting Robot System</title>
 
-    <link rel="stylesheet" href="/static/css/material.indigo-blue.min.css">
-    <link href="/static/css/material-icons.css" rel="stylesheet"> 
-    <link href="/static/css/index.css" rel="stylesheet" type="text/css"> 
-
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    
+    <link rel="stylesheet" href="/static/css/material.indigo-blue.min.css" />
+    <link href="/static/css/index.css" media="all" rel="stylesheet" type="text/css">
+    
     <script src="/static/js/jquery-3.1.0.min.js"></script>
     <script src="/static/js/material.min.js" defer></script>
 
     <style>
-        /* Styles remain untouched */
+        /* Styles remain untouched, ensuring dark background and white text */
         html, body { margin: 0 !important; padding: 0 !important; height: 100vh !important; width: 100% !important; overflow: hidden !important; }
         body { position: relative !important; }
         .mdl-layout__container { position: relative !important; height: 100vh !important; width: 100% !important; }
@@ -73,7 +73,7 @@
         </header>
         
         <div class="mdl-layout__drawer">
-            <span class="mdl-layout-title">Menu</span> 
+            <span class="mdl-layout-title">menu</span> 
             <nav id="topics-nav" class="mdl-navigation">
                 <a class="mdl-navigation__link" href="http://localhost:8888">
                     <i class="material-icons">dashboard</i> Dashboard
@@ -160,59 +160,28 @@
         const LOGIN_SERVER_URL = 'http://localhost:8000';
         const ROSBOARD_URL = 'http://localhost:8888';
 
-        // Helper function to show snackbar messages
         const showSnackbar = (message, timeout = 4000) => {
             const snackbar = document.getElementById('snackbar');
             if (snackbar && snackbar.MaterialSnackbar) {
                 snackbar.MaterialSnackbar.showSnackbar({ message, timeout });
-            } else {
-                console.warn('Snackbar not fully initialized.', message);
-            }
+            } else { console.warn('Snackbar not fully initialized.', message); }
         };
 
-        // --- API Functions ---
-        
-        // 🟢 Function to handle role update via API
         const updateUserRole = (userId, newRole) => {
-            fetch(`/api/users/${userId}/role`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ role: newRole })
-            })
-            .then(response => {
-                if (!response.ok) throw new Error('Role update failed on server.');
-                showSnackbar(`User role updated to ${newRole}.`);
-            })
-            .catch(error => {
-                console.error("Error updating role:", error);
-                showSnackbar(`Failed to update role: ${error.message}`, 6000);
-            });
+            fetch(`/api/users/${userId}/role`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ role: newRole }) })
+            .then(response => { if (!response.ok) throw new Error('Role update failed on server.'); showSnackbar(`User role updated to ${newRole}.`); })
+            .catch(error => { console.error("Error updating role:", error); showSnackbar(`Failed to update role: ${error.message}`, 6000); });
         };
 
-        // Function to handle user deletion via API
         const deleteUser = (userId, email, row) => {
             if (!confirm(`Are you sure you want to delete user: ${email}? This action is irreversible.`)) return;
-
             fetch(`/api/users/${userId}`, { method: 'DELETE' })
-                .then(response => {
-                    if (!response.ok) throw new Error(`Deletion failed: ${response.statusText}`);
-                    return response.json();
-                })
-                .then(() => {
-                    row.remove(); // Remove from UI
-                    showSnackbar(`User ${email} deleted successfully`);
-                })
-                .catch(error => {
-                    console.error("Error deleting user:", error);
-                    showSnackbar(`Failed to delete user: ${error.message}`, 6000);
-                });
+                .then(response => { if (!response.ok) throw new Error(`Deletion failed: ${response.statusText}`); return response.json(); })
+                .then(() => { row.remove(); showSnackbar(`User ${email} deleted successfully`); })
+                .catch(error => { console.error("Error deleting user:", error); showSnackbar(`Failed to delete user: ${error.message}`, 6000); });
         };
         
-        // --- Rendering Functions ---
-
-        // 🟢 UPDATED: Helper function to render the user table row with role selector
         const renderUserRow = (user) => {
-            const roleClass = user.role === 'admin' ? 'role-admin' : 'role-user';
             const row = document.createElement('tr');
             row.setAttribute('data-user-id', user.id);
             row.innerHTML = `
@@ -227,29 +196,16 @@
                     <button class="mdl-button mdl-js-button mdl-button--icon delete-btn" data-user-id="${user.id}" data-user-email="${user.email}">
                         <i class="material-icons">delete</i>
                     </button>
-                </td>
-            `;
+                </td>`;
             
-            // Attach delete handler immediately
             const deleteButton = row.querySelector('.delete-btn');
-            deleteButton.addEventListener('click', function() {
-                deleteUser(this.getAttribute('data-user-id'), this.getAttribute('data-user-email'), row);
-            });
-
-            // Attach role change handler
+            deleteButton.addEventListener('click', function() { deleteUser(this.getAttribute('data-user-id'), this.getAttribute('data-user-email'), row); });
             const roleSelector = row.querySelector('.role-selector');
-            roleSelector.addEventListener('change', function() {
-                updateUserRole(this.getAttribute('data-user-id'), this.value);
-            });
-
-            if (typeof componentHandler !== 'undefined') {
-                 componentHandler.upgradeElement(deleteButton);
-            }
-            
+            roleSelector.addEventListener('change', function() { updateUserRole(this.getAttribute('data-user-id'), this.value); });
+            if (typeof componentHandler !== 'undefined') { componentHandler.upgradeElement(deleteButton); }
             return row;
         };
         
-        // Function to fetch and render all users
         const fetchAndRenderUsers = () => {
             const tableBody = document.getElementById('users-table-body');
             tableBody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: #aaa;">Loading users...</td></tr>';
@@ -257,123 +213,77 @@
             fetch('/api/users')
                 .then(response => {
                     if (!response.ok) {
-                        if (response.status === 403) {
-                            showSnackbar("Error: Not authorized. Redirecting to dashboard.", 5000);
-                            setTimeout(() => window.location.href = ROSBOARD_URL, 1000);
-                            throw new Error('Unauthorized');
-                        }
+                        if (response.status === 403) { showSnackbar("Error: Not authorized. Redirecting to dashboard.", 5000); setTimeout(() => window.location.href = ROSBOARD_URL, 1000); throw new Error('Unauthorized'); }
                         throw new Error(`Failed to load users: ${response.status}`);
                     }
                     return response.json();
                 })
                 .then(users => {
-                    tableBody.innerHTML = ''; // Clear loading row
-                    users.forEach(user => {
-                        tableBody.appendChild(renderUserRow(user));
-                    });
+                    tableBody.innerHTML = ''; 
+                    users.forEach(user => { tableBody.appendChild(renderUserRow(user)); });
                 })
                 .catch(error => {
-                    if (error.message !== 'Unauthorized') {
-                        console.error("Error loading users:", error);
-                        tableBody.innerHTML = `<tr><td colspan="3" style="color: #ff5252; text-align: center;">Error loading users. ${error.message}</td></tr>`;
-                    }
+                    if (error.message !== 'Unauthorized') { console.error("Error loading users:", error); }
                 });
         };
 
-        
-        // --- Main DOM Ready Logic ---
         document.addEventListener("DOMContentLoaded", function() {
-            // Initialize MDL components
-            if (typeof componentHandler !== 'undefined') {
-                componentHandler.upgradeAllRegistered();
-            }
+            if (typeof componentHandler !== 'undefined') { componentHandler.upgradeAllRegistered(); }
 
             const userLinksContainer = document.getElementById("user-links");
             const createForm = document.getElementById('create-user-form');
-            const tableBody = document.getElementById('users-table-body');
-
-            // 1. Fetch user session information (Security Check & Sidebar)
+            
             fetch(`${LOGIN_SERVER_URL}/api/get_session`, {credentials: 'include'})
                 .then(response => {
-                    if (!response.ok) {
-                        window.location.href = '/login'; // Redirect to Login Server login page
-                        throw new Error('Not authenticated');
-                    }
+                    if (!response.ok) { window.location.href = '/login'; throw new Error('Not authenticated'); }
                     return response.json();
                 })
                 .then(user => {
-                    // Render sidebar links
                     let linksHtml = '';
-                    if (user.role === 'admin') {
-                        linksHtml += `<a class="mdl-navigation__link" href="/admin">
-                            <i class="material-icons">admin_panel_settings</i> Admin Panel
-                        </a>`;
-                    }
-                    // Since Profile page was removed, just add Logout
+                    if (user.role === 'admin') { linksHtml += `<a class="mdl-navigation__link" href="/admin"><i class="material-icons">admin_panel_settings</i> Admin Panel</a>`; }
                     linksHtml += `
                         <div class="email" title="${user.email}">${user.email}</div>
-                        <a class="mdl-navigation__link" href="/logout">
-                            <i class="material-icons">logout</i> Logout
-                        </a>`;
+                        <a class="mdl-navigation__link" href="/logout"><i class="material-icons">logout</i> Logout</a>`;
                     userLinksContainer.innerHTML = linksHtml;
                     
-                    if (typeof componentHandler !== 'undefined') {
-                        componentHandler.upgradeElements(userLinksContainer);
-                    }
+                    if (typeof componentHandler !== 'undefined') { componentHandler.upgradeElements(userLinksContainer); }
                     
-                    // 2. Load the list of all existing users
                     fetchAndRenderUsers(); 
                 })
                 .catch(error => {
-                    if (error.message !== 'Not authenticated') {
-                       console.error("Error fetching user session:", error);
-                    }
-                    // Final fallback to login page
+                    if (error.message !== 'Not authenticated') { console.error("Error fetching user session:", error); }
                     window.location.href = '/login';
                 });
 
-            // 3. Form submission handler (Create New User)
             createForm.addEventListener('submit', function(e) {
                 e.preventDefault();
-                // 🚨 FIX: Ensure correct IDs for form inputs are used
-                const email = document.getElementById('user-email').value; // Corrected
-                const password = document.getElementById('user-password').value; // Corrected
-                const role = document.getElementById('user-role-create').value; // Corrected
+                // 🚨 CORRECTED REFERENCES
+                const email = document.getElementById('user-email').value; 
+                const password = document.getElementById('user-password').value; 
+                const role = document.getElementById('user-role-create').value; 
                 
-                if (password.length < 6) {
-                    showSnackbar("Password must be at least 6 characters.", 3000);
-                    return;
-                }
+                if (password.length < 6) { showSnackbar("Password must be at least 6 characters.", 3000); return; }
 
                 fetch('/api/users', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email, password, role })
                 })
                 .then(response => {
                     if (response.status === 403) throw new Error('Permission denied. Session expired?');
-                    if (!response.ok) {
-                         return response.json().then(data => { throw new Error(data.error || 'Server error during creation.'); });
-                    }
+                    if (!response.ok) { return response.json().then(data => { throw new Error(data.error || 'Server error during creation.'); }); }
                     return response.json();
                 })
                 .then(newUserArray => {
                     const newUser = newUserArray[0]; 
-                    
                     showSnackbar(`User ${newUser.email} created successfully as ${newUser.role}`);
                     
-                    // Add the new user to the table
+                    const tableBody = document.getElementById('users-table-body');
                     tableBody.appendChild(renderUserRow(newUser));
 
-                    // Reset form inputs
                     createForm.reset();
                     
-                    // Reset MDL inputs state
                     const fields = createForm.querySelectorAll('.mdl-js-textfield');
-                    fields.forEach(field => {
-                         if (field.MaterialTextfield) field.MaterialTextfield.change();
-                    });
-
+                    fields.forEach(field => { if (field.MaterialTextfield) field.MaterialTextfield.change(); });
                 })
                 .catch(error => {
                     console.error('Error creating user:', error);
@@ -382,5 +292,3 @@
             });
         });
     </script>
-</body>
-</html>
