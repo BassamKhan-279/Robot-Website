@@ -5,14 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Panel - Autonomous Oil Palm Harvesting Robot System</title>
 
-    <!-- 🟢 ADDED: All the same CSS and JS from index.html for consistency -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <link rel="stylesheet" href="/rosboard/css/material.indigo-blue.min.css" />
-    <link href="/rosboard/css/index.css" media="all" rel="stylesheet" type="text/css">
     
-    <!-- 🟢 ADDED: Styles for the sidebar and the admin panel content -->
+    <link rel="stylesheet" href="/static/css/material.indigo-blue.min.css" />
+    <link href="/static/css/index.css" media="all" rel="stylesheet" type="text/css">
+    
     <style>
-        
         .sidebar-user-info {
           position: absolute;
           bottom: 0;
@@ -31,7 +29,6 @@
           padding-bottom: 8px;
         }
 
-        
         .admin-content {
             padding: 24px;
             color: #000; 
@@ -118,17 +115,15 @@
         </div>
       </header>
 
-      <!-- 🟢 REPLACED: Added the exact same sidebar from index.html -->
       <div class="mdl-layout__drawer">
         <nav id="topics-nav" class="mdl-navigation">
             
             <div id="topics-nav-system-title" class="topics-nav-title">System</div>
-            <!-- This div will be filled by index.js -->
             <div id="topics-nav-system"></div> 
 
             <div id="topics-nav-ros-title" class="topics-nav-title">ROBOT 2</div>
             
-            <a class="mdl-navigation__link" href="/rosboard/index.html" style="display: flex; align-items: center;">
+            <a class="mdl-navigation__link" href="http://localhost:8888/index.html" style="display: flex; align-items: center;">
               <i class="material-icons" style="padding-right: 16px;">home</i>
               Home
             </a>
@@ -136,8 +131,7 @@
             <div style="opacity:0.3;" id="topics-nav-unsupported"></div>
 
             <div class="sidebar-user-info" id="user-links">
-                
-            </div>
+                </div>
         </nav>
       </div>
 
@@ -145,7 +139,6 @@
       <main class="mdl-layout__content" style="background-color: #f5f5f5;">
         <div class="admin-content">
 
-            <!-- Create User Form -->
             <div class="container">
                 <h2>Create New User</h2>
                 <form id="create-user-form">
@@ -159,7 +152,6 @@
                 </form>
             </div>
 
-            <!-- Existing Users Table -->
             <div class="container">
                 <h1>Existing Users</h1>
                 <div id="message-box" class="message"></div>
@@ -182,14 +174,14 @@
     </div>
 
     
-    <script type="text/javascript" src="/rosboard/js/material.min.js" defer></script>
+    <script type="text/javascript" src="/static/js/material.min.js" defer></script>
     
-    <!-- This is the main JS for the admin page functions -->
     <script>
         document.addEventListener("DOMContentLoaded", () => {
             const tbody = document.getElementById("users-tbody");
             const messageBox = document.getElementById("message-box");
             const createUserForm = document.getElementById("create-user-form");
+            const ROSBOARD_URL = 'http://localhost:8888'; // Define the ROSBoard URL for error redirects
 
             // --- Show a message ---
             function showMessage(text, type = 'success') {
@@ -205,7 +197,7 @@
                     const response = await fetch('/api/users');
                     if (!response.ok) {
                         if (response.status === 403) {
-                            document.body.innerHTML = '<h1>403 - Forbidden</h1><p>You do not have permission to view this page.</p><a href="/rosboard/index.html">Back to Dashboard</a>';
+                            document.body.innerHTML = `<h1>403 - Forbidden</h1><p>You do not have permission to view this page.</p><a href="${ROSBOARD_URL}">Back to Dashboard</a>`;
                         }
                         throw new Error(`Server error: ${response.statusText}`);
                     }
@@ -217,15 +209,14 @@
                 }
             }
 
-            // --- 2. Render the user data into the table ---
+            // --- 2. Render the user data into the table  ---
             function renderUsers(users) {
-                tbody.innerHTML = ""; // Clear existing rows
+                tbody.innerHTML = "";
                 users.forEach(user => {
-                    appendUserToTable(user); // Add each user to the table
+                    appendUserToTable(user);
                 });
             }
             
-            // Helper function to add one user to the table
             function appendUserToTable(user) {
                 const tr = document.createElement("tr");
                 tr.dataset.userId = user.id;
@@ -251,7 +242,7 @@
                 tbody.appendChild(tr);
             }
 
-            // --- 3. Function to update a user's role ---
+            // --- 3. Function to update a user's role  ---
             async function updateUserRole(id, newRole) {
                 try {
                     const response = await fetch(`/api/users/${id}/role`, {
@@ -269,7 +260,7 @@
                 }
             }
 
-            // --- 4. Function to delete a user ---
+            // --- 4. Function to delete a user  ---
             async function deleteUser(id, email) {
                 if (!confirm(`Are you sure you want to delete the user: ${email}? This will delete their auth account and profile. This action cannot be undone.`)) {
                     return;
@@ -289,7 +280,7 @@
                 }
             }
             
-            // --- 5. Handle Create User Form ---
+            // --- 5. Handle Create User Form  ---
             createUserForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const email = document.getElementById('new-email').value;
@@ -329,11 +320,8 @@
                             Admin Panel
                           </a>`;
                     }
-                    linksHtml += `
-                        <a class="mdl-navigation__link" href="/profile" style="display: flex; align-items: center;">
-                          <i class="material-icons" style="padding-right: 16px;">person</i>
-                          Profile
-                        </a>`;
+                    
+                    
                     linksHtml += `
                         <div class="email" title="${user.email}">${user.email}</div>
                         <a class="mdl-navigation__link" href="/logout" style="display: flex; align-items: center;">
@@ -350,4 +338,3 @@
     </script>
 </body>
 </html>
-
