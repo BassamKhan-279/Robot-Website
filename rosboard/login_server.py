@@ -22,7 +22,7 @@ LOGIN_SERVER_URL = f"http://localhost:{USER_FACING_PORT}"
 BASE_DIR = pathlib.Path(__file__).parent
 WEB_DIR = BASE_DIR / "web" # Confirmed correct path: rosboard/web/
 
-# ---------- Supabase Config  ----------
+# ---------- Supabase Config  ----------
 SUPABASE_URL = "https://pxlbmyygaiqevnbcrnmj.supabase.co"
 SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB4bGJteXlnYWlxZXZuYmNybm1qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMxMDU3NjUsImV4cCI6MjA3ODQ2NTc2NX0.dZGlpzwumKk2RkcuBr311UaxsT28hUu9fD027Qj8jhA"
 SUPABASE_ROLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB4bGJteXlnYWlxZXZuYmNybm1qIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MzEwNTc2NSwiZXhwIjoyMDc4NDY1NzY1fQ._-WhtBPNPhuVwap51TK4JL29EvhU9XELErT4dMhhr5o"
@@ -105,7 +105,7 @@ async def sb_delete(session: ClientSession, path: str, params: dict = None):
         except Exception:
             return resp.status, {"raw": await resp.text()}
 
-# ---------- App startup / cleanup  ----------
+# ---------- App startup / cleanup  ----------
 async def on_startup(app):
     print("[Supabase] Creating HTTP client session")
     app["http_client"] = ClientSession()
@@ -161,7 +161,7 @@ async def login_page(request):
     return web.FileResponse(login_path)
 
 # -------------------------------------------------------------
-#   SECURE PAGE HANDLERS (Redirect to ROSBoard after login)
+#   SECURE PAGE HANDLERS (Redirect to ROSBoard after login)
 # -------------------------------------------------------------
 
 async def index_page(request):
@@ -173,14 +173,13 @@ async def index_page(request):
     raise web.HTTPFound(ROSBOARD_URL)
 
 
-# --- Logout, Register, Forgot Password, Admin, API Endpoints  ---
+# --- Logout, Register, Forgot Password, Admin, API Endpoints  ---
 async def logout(request):
     session = await get_session(request)
     session.invalidate()
     print("[Logout] User logged out.")
     raise web.HTTPFound(f"{LOGIN_SERVER_URL}/login")
 
-# 🟢 CORRECTED HANDLER NAME FOR CONSISTENCY
 async def reset_password_handler(request):
     """
     Handles the password reset submission by calling the Supabase API directly.
@@ -293,8 +292,9 @@ async def require_admin(request):
     session = await get_session(request)
     user = session.get("user")
     if not user or user.get("role") != "admin":
-        print(f"[Security] ❌ Admin access denied for user: {user.get('email')}")
-        raise web.HTTPForbidden(text="You must be an admin to access this page.")
+        print(f"[Security] ❌ Admin access denied for user: {user.get('email') if user else 'No user'}")
+        # Redirect to login instead of returning 403 Forbidden
+        raise web.HTTPFound(f"{LOGIN_SERVER_URL}/login")
     print(f"[Security] ✅ Admin access granted for: {user.get('email')}")
     return user
 
@@ -305,7 +305,6 @@ async def get_user_session(request):
         return web.json_response(session["user"])
     return web.json_response({"error": "Not logged in"}, status=401)
 
-# 🚨 FINAL FIX HANDLER 🚨
 async def admin_page(request):
     """
     Serves the admin.html page with explicit content type, 
@@ -465,7 +464,7 @@ async def require_login_middleware(request, handler):
     # These paths are public on the login server (port 8000)
     public_paths = [
         "/login", "/register", "/forgot-password", "/static", 
-        "/logout", "/api/get_session" 
+        "/logout", "/api/get_session", "/admin"
     ]
     # We must also allow POST to /reset_password
     if path == "/reset_password" and request.method == "POST":
@@ -485,7 +484,7 @@ async def require_login_middleware(request, handler):
     
     return await handler(request)
 
-# ---------- Main  ----------
+# ---------- Main  ----------
 def main():
     print(f"[LoginServer] 🔧 Starting Login/Admin server on port {USER_FACING_PORT}...")
     
