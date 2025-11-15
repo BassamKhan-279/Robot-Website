@@ -107,7 +107,7 @@ class ROSBoardNode(object):
 
         self.lock = threading.Lock()
 
-        rospy.loginfo("ROSboard listening on :%d" % self.port)
+        rospy.loginfo("Autonomous Oil Palm Harvesting Robot System listening on :%d" % self.port)  # CHANGED THIS LINE
 
     def start(self):
         rospy.spin()
