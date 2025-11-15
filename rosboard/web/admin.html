@@ -61,8 +61,8 @@
         .form-group { margin-bottom: 15px; }
         .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
         
-        /* Style for Main Page link in HEADER only */
-        .header-main-page-link {
+        /* Style for Main Page link in HEADER only - make it white */
+        .mdl-navigation .mdl-navigation__link {
             color: white !important;
         }
         
@@ -81,7 +81,8 @@
           <span class="mdl-layout-title">Admin Panel</span>
           <div class="mdl-layout-spacer"></div>
           <nav class="mdl-navigation">
-            <a class="mdl-navigation__link header-main-page-link" href="http://localhost:8888">
+            <!-- KEEP Main Page link in HEADER -->
+            <a class="mdl-navigation__link" href="http://localhost:8888">
               <i class="material-icons">home</i> Main Page
             </a>
           </nav>
@@ -91,7 +92,7 @@
       <div class="mdl-layout__drawer">
         <span class="mdl-layout-title">Menu</span> 
         <nav id="topics-nav" class="mdl-navigation">
-            <!-- Remove the Main Page link from sidebar -->
+            <!-- REMOVE Main Page link from SIDEBAR -->
             
             <div class="sidebar-user-info" id="user-links">
                 Loading user info...
