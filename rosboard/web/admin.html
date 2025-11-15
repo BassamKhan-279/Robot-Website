@@ -23,14 +23,14 @@
         .topics-nav-title { text-transform: uppercase; color: #808080; font-size: 10pt; font-weight: 700; padding-left: 10pt; border-bottom: 1px dotted #505050; padding-top: 10pt; padding-bottom: 10pt; }
         .mdl-navigation__link { color: #c0c0c0 !important; text-overflow: ellipsis; overflow: hidden; padding-top: 5pt !important; padding-bottom: 5pt !important; display: flex; align-items: center; }
 
-        /* 🚨 FINAL AESTHETIC FIX: Content Area and Container Overrides 🚨 */
+        /* 🚨 AESTHETIC FIX: Content Area and Container Overrides 🚨 */
         main.mdl-layout__content { background: #202020 !important; }
-        .admin-content { padding: 24px; color: #f0f0f0; } /* Text color for main content */
+        .admin-content { padding: 24px; color: #f0f0f0; } 
         
         /* FIX: Inner Containers (Forms/Tables) */
         .container, .admin-section {
-            background: #303030; /* Dark background for the modules */
-            color: #f0f0f0; /* Text color for content inside the box */
+            background: #303030; 
+            color: #f0f0f0; 
             border-radius: 5px; padding: 20px; 
             margin-bottom: 20pt; box-shadow: 0 4px 12px rgba(0,0,0,0.2); 
             width: 95%; max-width: 900px;
@@ -48,7 +48,6 @@
         input, select { background: #383838; color: #f0f0f0; border: 1px solid #505050; }
         .mdl-textfield__input { color: #f0f0f0; border-bottom-color: rgba(255,255,255,0.3); }
         .mdl-textfield__label { color: rgba(255,255,255,0.5); }
-        .users-table select { background: #303030; color: #f0f0f0; border: 1px solid #505050; padding: 4px; border-radius: 4px; }
         .form-group label { color: #c0c0c0; } 
         
         /* Remaining general MDL styles */
@@ -169,43 +168,21 @@
             const snackbar = document.getElementById('snackbar');
             if (snackbar && snackbar.MaterialSnackbar) {
                 snackbar.MaterialSnackbar.showSnackbar({ message, timeout });
-            } else {
-                console.warn('Snackbar not fully initialized.', message);
-            }
+            } else { console.warn('Snackbar not fully initialized.', message); }
         };
 
         const updateUserRole = (userId, newRole) => {
-            fetch(`/api/users/${userId}/role`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ role: newRole })
-            })
-            .then(response => {
-                if (!response.ok) throw new Error('Role update failed on server.');
-                showSnackbar(`User role updated to ${newRole}.`);
-            })
-            .catch(error => {
-                console.error("Error updating role:", error);
-                showSnackbar(`Failed to update role: ${error.message}`, 6000);
-            });
+            fetch(`/api/users/${userId}/role`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ role: newRole }) })
+            .then(response => { if (!response.ok) throw new Error('Role update failed on server.'); showSnackbar(`User role updated to ${newRole}.`); })
+            .catch(error => { console.error("Error updating role:", error); showSnackbar(`Failed to update role: ${error.message}`, 6000); });
         };
 
         const deleteUser = (userId, email, row) => {
             if (!confirm(`Are you sure you want to delete user: ${email}? This action is irreversible.`)) return;
-
             fetch(`/api/users/${userId}`, { method: 'DELETE' })
-                .then(response => {
-                    if (!response.ok) throw new Error(`Deletion failed: ${response.statusText}`);
-                    return response.json();
-                })
-                .then(() => {
-                    row.remove(); 
-                    showSnackbar(`User ${email} deleted successfully`);
-                })
-                .catch(error => {
-                    console.error("Error deleting user:", error);
-                    showSnackbar(`Failed to delete user: ${error.message}`, 6000);
-                });
+                .then(response => { if (!response.ok) throw new Error(`Deletion failed: ${response.statusText}`); return response.json(); })
+                .then(() => { row.remove(); showSnackbar(`User ${email} deleted successfully`); })
+                .catch(error => { console.error("Error deleting user:", error); showSnackbar(`Failed to delete user: ${error.message}`, 6000); });
         };
         
         const renderUserRow = (user) => {
@@ -227,19 +204,10 @@
             `;
             
             const deleteButton = row.querySelector('.delete-btn');
-            deleteButton.addEventListener('click', function() {
-                deleteUser(this.getAttribute('data-user-id'), this.getAttribute('data-user-email'), row);
-            });
-
+            deleteButton.addEventListener('click', function() { deleteUser(this.getAttribute('data-user-id'), this.getAttribute('data-user-email'), row); });
             const roleSelector = row.querySelector('.role-selector');
-            roleSelector.addEventListener('change', function() {
-                updateUserRole(this.getAttribute('data-user-id'), this.value);
-            });
-
-            if (typeof componentHandler !== 'undefined') {
-                 componentHandler.upgradeElement(deleteButton);
-            }
-            
+            roleSelector.addEventListener('change', function() { updateUserRole(this.getAttribute('data-user-id'), this.value); });
+            if (typeof componentHandler !== 'undefined') { componentHandler.upgradeElement(deleteButton); }
             return row;
         };
         
@@ -250,113 +218,77 @@
             fetch('/api/users')
                 .then(response => {
                     if (!response.ok) {
-                        if (response.status === 403) {
-                            showSnackbar("Error: Not authorized. Redirecting to dashboard.", 5000);
-                            setTimeout(() => window.location.href = ROSBOARD_URL, 1000);
-                            throw new Error('Unauthorized');
-                        }
+                        if (response.status === 403) { showSnackbar("Error: Not authorized. Redirecting to dashboard.", 5000); setTimeout(() => window.location.href = ROSBOARD_URL, 1000); throw new Error('Unauthorized'); }
                         throw new Error(`Failed to load users: ${response.status}`);
                     }
                     return response.json();
                 })
                 .then(users => {
-                    tableBody.innerHTML = ''; // Clear loading row
-                    users.forEach(user => {
-                        tableBody.appendChild(renderUserRow(user));
-                    });
+                    tableBody.innerHTML = ''; 
+                    users.forEach(user => { tableBody.appendChild(renderUserRow(user)); });
                 })
                 .catch(error => {
-                    if (error.message !== 'Unauthorized') {
-                        console.error("Error loading users:", error);
-                        tableBody.innerHTML = `<tr><td colspan="3" style="color: #ff5252; text-align: center;">Error loading users. ${error.message}</td></tr>`;
-                    }
+                    if (error.message !== 'Unauthorized') { console.error("Error loading users:", error); }
                 });
         };
 
         document.addEventListener("DOMContentLoaded", function() {
-            if (typeof componentHandler !== 'undefined') {
-                componentHandler.upgradeAllRegistered();
-            }
+            if (typeof componentHandler !== 'undefined') { componentHandler.upgradeAllRegistered(); }
 
             const userLinksContainer = document.getElementById("user-links");
             const createForm = document.getElementById('create-user-form');
             
             fetch(`${LOGIN_SERVER_URL}/api/get_session`, {credentials: 'include'})
                 .then(response => {
-                    if (!response.ok) {
-                        window.location.href = '/login'; 
-                        throw new Error('Not authenticated');
-                    }
+                    if (!response.ok) { window.location.href = '/login'; throw new Error('Not authenticated'); }
                     return response.json();
                 })
                 .then(user => {
                     let linksHtml = '';
-                    if (user.role === 'admin') {
-                        linksHtml += `<a class="mdl-navigation__link" href="/admin">
-                            <i class="material-icons">admin_panel_settings</i> Admin Panel
-                        </a>`;
-                    }
+                    if (user.role === 'admin') { linksHtml += `<a class="mdl-navigation__link" href="/admin"><i class="material-icons">admin_panel_settings</i> Admin Panel</a>`; }
                     linksHtml += `
                         <div class="email" title="${user.email}">${user.email}</div>
-                        <a class="mdl-navigation__link" href="/logout">
-                            <i class="material-icons">logout</i> Logout
-                        </a>`;
+                        <a class="mdl-navigation__link" href="/logout"><i class="material-icons">logout</i> Logout</a>`;
                     userLinksContainer.innerHTML = linksHtml;
                     
-                    if (typeof componentHandler !== 'undefined') {
-                        componentHandler.upgradeElements(userLinksContainer);
-                    }
+                    if (typeof componentHandler !== 'undefined') { componentHandler.upgradeElements(userLinksContainer); }
                     
                     fetchAndRenderUsers(); 
                 })
                 .catch(error => {
-                    if (error.message !== 'Not authenticated') {
-                       console.error("Error fetching user session:", error);
-                    }
+                    if (error.message !== 'Not authenticated') { console.error("Error fetching user session:", error); }
                     window.location.href = '/login';
                 });
 
             createForm.addEventListener('submit', function(e) {
                 e.preventDefault();
+                // 🚨 CORRECTED REFERENCES
                 const email = document.getElementById('user-email').value; 
                 const password = document.getElementById('user-password').value; 
                 const role = document.getElementById('user-role-create').value; 
                 
-                if (password.length < 6) {
-                    showSnackbar("Password must be at least 6 characters.", 3000);
-                    return;
-                }
+                if (password.length < 6) { showSnackbar("Password must be at least 6 characters.", 3000); return; }
 
                 fetch('/api/users', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email, password, role })
                 })
                 .then(response => {
                     if (response.status === 403) throw new Error('Permission denied. Session expired?');
-                    if (!response.ok) {
-                         return response.json().then(data => { throw new Error(data.error || 'Server error during creation.'); });
-                    }
+                    if (!response.ok) { return response.json().then(data => { throw new Error(data.error || 'Server error during creation.'); }); }
                     return response.json();
                 })
                 .then(newUserArray => {
                     const newUser = newUserArray[0]; 
-                    
                     showSnackbar(`User ${newUser.email} created successfully as ${newUser.role}`);
                     
-                    // Add the new user to the table
                     const tableBody = document.getElementById('users-table-body');
                     tableBody.appendChild(renderUserRow(newUser));
 
-                    // Reset form inputs
                     createForm.reset();
                     
-                    // Reset MDL inputs state
                     const fields = createForm.querySelectorAll('.mdl-js-textfield');
-                    fields.forEach(field => {
-                         if (field.MaterialTextfield) field.MaterialTextfield.change();
-                    });
-
+                    fields.forEach(field => { if (field.MaterialTextfield) field.MaterialTextfield.change(); });
                 })
                 .catch(error => {
                     console.error('Error creating user:', error);
