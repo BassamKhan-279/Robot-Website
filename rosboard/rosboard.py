@@ -33,7 +33,7 @@ class ROSBoardNode(object):
         self.__class__.instance = self
         rospy.init_node(node_name)
         self.port = rospy.get_param("~port", 8888)
-        self.title = rospy.get_param("~title", socket.gethostname())
+        self.title = rospy.get_param("~title", "Autonomous Oil Palm Harvesting Robot System")  # CHANGED THIS LINE
 
         #Define a list of allowed ROS topics (whitelist)
         # Only topics in this list (or system topics like _dmesg) will be shown/subscribed to.
@@ -410,3 +410,4 @@ def main(args=None):
 
 if __name__ == '__main__':
     main()
+    
