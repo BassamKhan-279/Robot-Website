@@ -15,7 +15,6 @@
 
     <style>
         .sidebar-user-info { position: absolute; bottom: 0; width: 100%; border-top: 1px solid rgba(255,255,255,0.1); padding: 16px; box-sizing: border-box; }
-        .sidebar-user-info .email { font-size: 0.9em; opacity: 0.7; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-left: 16px; padding-bottom: 8px; color: #c0c0c0; }
         .mdl-layout-title { font-family: 'Titillium Web', sans-serif; color: #c0c0c0; }
         .mdl-layout__drawer { background: #404040 !important; }
         
@@ -62,9 +61,14 @@
         .form-group { margin-bottom: 15px; }
         .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
         
-        /* Style for Main Page link */
-        .main-page-link {
+        /* Style for Main Page link in HEADER only */
+        .header-main-page-link {
             color: white !important;
+        }
+        
+        /* Logout button spacing */
+        .logout-btn {
+            margin-top: 20px !important;
         }
     </style>
 </head>
@@ -77,7 +81,7 @@
           <span class="mdl-layout-title">Admin Panel</span>
           <div class="mdl-layout-spacer"></div>
           <nav class="mdl-navigation">
-            <a class="mdl-navigation__link main-page-link" href="http://localhost:8888">
+            <a class="mdl-navigation__link header-main-page-link" href="http://localhost:8888">
               <i class="material-icons">home</i> Main Page
             </a>
           </nav>
@@ -87,11 +91,7 @@
       <div class="mdl-layout__drawer">
         <span class="mdl-layout-title">Menu</span> 
         <nav id="topics-nav" class="mdl-navigation">
-            <a class="mdl-navigation__link" href="http://localhost:8888">
-                <i class="material-icons">dashboard</i> Main Page
-            </a>
-            
-            <!-- Remove the ADMIN section -->
+            <!-- Remove the Main Page link from sidebar -->
             
             <div class="sidebar-user-info" id="user-links">
                 Loading user info...
@@ -276,10 +276,11 @@
                 })
                 .then(user => {
                     let linksHtml = '';
-                    // Remove the Admin Panel link from sidebar since we're already on admin page
+                    // Only show logout with spacing
                     linksHtml += `
-                        <div class="email" title="${user.email}">${user.email}</div>
-                        <a class="mdl-navigation__link" href="/logout">Logout</a>`;
+                        <a class="mdl-navigation__link logout-btn" href="/logout">
+                            <i class="material-icons">exit_to_app</i> Logout
+                        </a>`;
                     userLinksContainer.innerHTML = linksHtml;
                     
                     fetchAndRenderUsers(); 
