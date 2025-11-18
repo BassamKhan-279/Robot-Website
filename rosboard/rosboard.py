@@ -33,42 +33,36 @@ class ROSBoardNode(object):
         self.__class__.instance = self
         rospy.init_node(node_name)
         self.port = rospy.get_param("~port", 8888)
-        self.title = rospy.get_param("~title", "Autonomous Oil Palm Harvesting Robot System")  # CHANGED THIS LINE
+        self.title = rospy.get_param("~title", "Autonomous Oil Palm Harvesting Robot System")
 
         #Define a list of allowed ROS topics (whitelist)
-        # Only topics in this list (or system topics like _dmesg) will be shown/subscribed to.
+
         self.allowed_topics = [
+
             "/camera/rgb/image_color/compressed",
             "/battery_voltages",
             "/rtabmap/odom",
-            # Add any other required ROS topics here, e.g.:
-            # "/tf", 
-            # "/odom"
+            
         ]
 
         # desired subscriptions of all the websockets connecting to this instance.
-        # these remote subs are updated directly by "friend" class ROSBoardSocketHandler.
-        # this class will read them and create actual ROS subscribers accordingly.
-        # dict of topic_name -> set of sockets
+
         self.remote_subs = {}
 
         # actual ROS subscribers.
-        # dict of topic_name -> ROS Subscriber
+
         self.local_subs = {}
 
-        # minimum update interval per topic (throttle rate) amang all subscribers to a particular topic.
-        # we can throw data away if it arrives faster than this
-        # dict of topic_name -> float (interval in seconds)
+        # minimum update interval per topic (throttle rate)
         self.update_intervals_by_topic = {}
 
         # last time data arrived for a particular topic
-        # dict of topic_name -> float (time in seconds)
+
         self.last_data_times_by_topic = {}
 
         if rospy.__name__ == "rospy2":
             # ros2 hack: need to subscribe to at least 1 topic
-            # before dynamic subscribing will work later.
-            # ros2 docs don't explain why but we need this magic.
+
             self.sub_rosout = rospy.Subscriber("/rosout", Log, lambda x:x)
 
         tornado_settings = {
@@ -77,23 +71,14 @@ class ROSBoardNode(object):
         }
 
         tornado_handlers = [
-        (r"/rosboard/v1", ROSBoardSocketHandler, {
-            "node": self,
-        }),
-        # Serve static files (CSS, JS, images) from /static/ path
-        (r"/static/(.*)", tornado.web.StaticFileHandler, {
-            "path": tornado_settings.get("static_path")
-        }),
-        # Serve HTML files directly
-        (r"/(.*\.html)", NoCacheStaticFileHandler, {
-            "path": tornado_settings.get("static_path")
-        }),
-        # Default route - serve index.html for all other requests
-        (r"/(.*)", NoCacheStaticFileHandler, {
-            "path": tornado_settings.get("static_path"),
-            "default_filename": "index.html"
-        }),
-]
+                (r"/rosboard/v1", ROSBoardSocketHandler, {
+                    "node": self,
+                }),
+                # Serve ALL files from the html directory - no default_filename override
+                (r"/(.*)", NoCacheStaticFileHandler, {
+                    "path": tornado_settings.get("static_path")
+                }),
+        ]
 
         self.event_loop = None
         self.tornado_application = tornado.web.Application(tornado_handlers, **tornado_settings)
@@ -116,7 +101,7 @@ class ROSBoardNode(object):
 
         self.lock = threading.Lock()
 
-        rospy.loginfo("Autonomous Oil Palm Harvesting Robot System listening on :%d" % self.port)  # CHANGED THIS LINE
+        rospy.loginfo("Autonomous Oil Palm Harvesting Robot System listening on :%d" % self.port)
 
     def start(self):
         rospy.spin()
@@ -164,9 +149,9 @@ class ROSBoardNode(object):
                     return QoSProfile(
                             depth=10,
                             reliability=QoSReliabilityPolicy.BEST_EFFORT,
-                            # reliability=QoSReliabilityPolicy.RELIABLE,
+
                             durability=QoSDurabilityPolicy.VOLATILE,
-                            # durability=QoSDurabilityPolicy.TRANSIENT_LOCAL,
+
                         )
             else:
                 rospy.logwarn("QoS profiles are only used in ROS2")
@@ -323,7 +308,7 @@ class ROSBoardNode(object):
 
         self.lock.release()
 
-    # The rest of the class methods (on_system_stats, on_top, on_dmesg, on_ros_msg) remain the same.
+
     def on_system_stats(self, system_stats):
         """
         system stats received. send it off to the client as a "fake" ROS message (which could at some point be a real ROS message)
@@ -419,4 +404,4 @@ def main(args=None):
 
 if __name__ == '__main__':
     main()
-    
+
