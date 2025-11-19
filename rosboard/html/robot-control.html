@@ -212,32 +212,17 @@
 
                 <!-- Control Boxes -->
                 <div class="boxes-container">
-                    <!-- Box 1 -->
+                    <!-- Single Task Control Box -->
                     <div class="control-box">
-                        <div class="box-title">Harvesting Control</div>
-                        <button class="control-button start-button" id="startHarvest">
-                            <i class="material-icons">play_arrow</i> Start Harvest
+                        <div class="box-title">Task Control</div>
+                        <button class="control-button start-button" id="startTask">
+                            <i class="material-icons">play_arrow</i> Start Task
                         </button>
                         <div style="height: 15px;"></div> <!-- Spacing -->
-                        <button class="control-button stop-button active" id="stopHarvest">
-                            <i class="material-icons">stop</i> Stop Harvest
+                        <button class="control-button stop-button active" id="stopTask">
+                            <i class="material-icons">stop</i> End Task
                         </button>
-                        <div class="status-indicator status-stopped" id="harvestStatus">
-                            Status: Stopped
-                        </div>
-                    </div>
-
-                    <!-- Box 2 -->
-                    <div class="control-box">
-                        <div class="box-title">Navigation Control</div>
-                        <button class="control-button start-button" id="startNavigation">
-                            <i class="material-icons">navigation</i> Start Navigation
-                        </button>
-                        <div style="height: 15px;"></div> <!-- Spacing -->
-                        <button class="control-button stop-button active" id="stopNavigation">
-                            <i class="material-icons">location_disabled</i> Stop Navigation
-                        </button>
-                        <div class="status-indicator status-stopped" id="navigationStatus">
+                        <div class="status-indicator status-stopped" id="taskStatus">
                             Status: Stopped
                         </div>
                     </div>
@@ -249,19 +234,15 @@
     <script>
         // Robot Control State
         let robotState = {
-            harvesting: false,
-            navigation: false,
+            taskRunning: false,
             progress: 0,
             progressInterval: null
         };
 
         // DOM Elements
-        const startHarvestBtn = document.getElementById('startHarvest');
-        const stopHarvestBtn = document.getElementById('stopHarvest');
-        const startNavigationBtn = document.getElementById('startNavigation');
-        const stopNavigationBtn = document.getElementById('stopNavigation');
-        const harvestStatus = document.getElementById('harvestStatus');
-        const navigationStatus = document.getElementById('navigationStatus');
+        const startTaskBtn = document.getElementById('startTask');
+        const stopTaskBtn = document.getElementById('stopTask');
+        const taskStatus = document.getElementById('taskStatus');
         const progressBar = document.getElementById('progressBar');
 
         // Initialize progress bar
@@ -308,48 +289,25 @@
             stopProgressSimulation();
         }
 
-        // Harvest Control Functions
-        startHarvestBtn.addEventListener('click', function() {
-            if (!robotState.harvesting) {
-                robotState.harvesting = true;
-                startHarvestBtn.classList.add('active');
-                stopHarvestBtn.classList.remove('active');
-                harvestStatus.textContent = 'Status: Running';
-                harvestStatus.className = 'status-indicator status-running';
+        // Task Control Functions
+        startTaskBtn.addEventListener('click', function() {
+            if (!robotState.taskRunning) {
+                robotState.taskRunning = true;
+                startTaskBtn.classList.add('active');
+                stopTaskBtn.classList.remove('active');
+                taskStatus.textContent = 'Status: Running';
+                taskStatus.className = 'status-indicator status-running';
                 startProgressSimulation();
             }
         });
 
-        stopHarvestBtn.addEventListener('click', function() {
-            if (robotState.harvesting) {
-                robotState.harvesting = false;
-                stopHarvestBtn.classList.add('active');
-                startHarvestBtn.classList.remove('active');
-                harvestStatus.textContent = 'Status: Stopped';
-                harvestStatus.className = 'status-indicator status-stopped';
-                stopProgressSimulation();
-            }
-        });
-
-        // Navigation Control Functions
-        startNavigationBtn.addEventListener('click', function() {
-            if (!robotState.navigation) {
-                robotState.navigation = true;
-                startNavigationBtn.classList.add('active');
-                stopNavigationBtn.classList.remove('active');
-                navigationStatus.textContent = 'Status: Running';
-                navigationStatus.className = 'status-indicator status-running';
-                startProgressSimulation();
-            }
-        });
-
-        stopNavigationBtn.addEventListener('click', function() {
-            if (robotState.navigation) {
-                robotState.navigation = false;
-                stopNavigationBtn.classList.add('active');
-                startNavigationBtn.classList.remove('active');
-                navigationStatus.textContent = 'Status: Stopped';
-                navigationStatus.className = 'status-indicator status-stopped';
+        stopTaskBtn.addEventListener('click', function() {
+            if (robotState.taskRunning) {
+                robotState.taskRunning = false;
+                stopTaskBtn.classList.add('active');
+                startTaskBtn.classList.remove('active');
+                taskStatus.textContent = 'Status: Stopped';
+                taskStatus.className = 'status-indicator status-stopped';
                 stopProgressSimulation();
             }
         });
@@ -359,9 +317,7 @@
             if (typeof componentHandler !== 'undefined') {
                 componentHandler.upgradeAllRegistered();
             }
-/* just checking*/
         });
     </script>
 </body>
 </html>
-
