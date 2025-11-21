@@ -73,8 +73,8 @@
               <!-- Updated container with navigation class -->
               <nav class="header-nav">
                 <span id="admin-button-container"></span>
-                <!-- Logout Button - UPDATED PATH -->
-                <a class="mdl-navigation__link logout-button" href="../web/login.html" title="Logout">
+                <!-- Logout Button - UPDATED TO ABSOLUTE URL -->
+                <a class="mdl-navigation__link logout-button" href="http://localhost:8000/login" title="Logout">
                     <i class="material-icons">power_settings_new</i>
                 </a>
               </nav>
@@ -116,7 +116,7 @@
                     // Check for network errors, 401 Unauthorized, or 403 Forbidden
                     if (response.status === 401 || response.status === 403 || !response.ok) {
                         // User not logged in/session expired, redirect them - UPDATED PATH
-                        window.location.href = `${LOGIN_SERVER_URL}/web/login.html`;
+                        window.location.href = `${LOGIN_SERVER_URL}/login`;
                         return null; // Stop processing
                     }
                     return response.json();
@@ -165,8 +165,8 @@
                 .catch(error => {
                     console.error("Network Error when checking session:", error);
                     
-                    // UPDATED PATH
-                    window.location.href = `${LOGIN_SERVER_URL}/web/login.html`; 
+                    // UPDATED PATH - Fixed to use /login instead of /web/login.html
+                    window.location.href = `${LOGIN_SERVER_URL}/login`; 
                 });
         });
 
