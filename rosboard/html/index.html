@@ -40,6 +40,25 @@
                 font-size: 18px !important;
                 margin-right: 6px !important;
             }
+            
+            /* Logout button styling */
+            .logout-button {
+                color: white !important;
+                min-width: 40px !important;
+                padding: 0 8px !important;
+                margin-right: 0 !important;
+            }
+            
+            .logout-button .material-icons {
+                font-size: 20px !important;
+                margin-right: 0 !important;
+            }
+            
+            /* Header navigation styling */
+            .header-nav {
+                display: flex !important;
+                align-items: center !important;
+            }
         </style>
     </head>
     <body>
@@ -51,7 +70,14 @@
               
               <div class="mdl-layout-spacer"></div>
               
-              <span id="admin-button-container"></span>
+              <!-- Updated container with navigation class -->
+              <nav class="header-nav">
+                <span id="admin-button-container"></span>
+                <!-- Logout Button -->
+                <a class="mdl-navigation__link logout-button" href="/login" title="Logout">
+                    <i class="material-icons">power_settings_new</i>
+                </a>
+              </nav>
               
             </div>
           </header>
