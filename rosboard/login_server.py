@@ -287,6 +287,11 @@ async def forgot_password_page(request):
             
     return web.FileResponse(forgot_path)
 
+async def reset_password_page(request):
+    """Serves the reset password page."""
+    reset_path = WEB_DIR / "reset_password.html"
+    return web.FileResponse(reset_path)
+
 async def require_admin(request):
     """Helper function to protect admin routes."""
     session = await get_session(request)
@@ -463,7 +468,7 @@ async def require_login_middleware(request, handler):
     
     # These paths are public on the login server (port 8000)
     public_paths = [
-        "/login", "/register", "/forgot-password", "/static", 
+        "/login", "/register", "/forgot-password", "/reset-password", "/static", 
         "/logout", "/api/get_session", "/admin"
     ]
     # We must also allow POST to /reset_password
@@ -506,6 +511,7 @@ def main():
     app.router.add_post("/register", register_page)
     app.router.add_get("/forgot-password", forgot_password_page)
     app.router.add_post("/forgot-password", forgot_password_page)
+    app.router.add_get("/reset-password", reset_password_page)
     app.router.add_post("/reset_password", reset_password_handler)
     
     # Admin Page Route
