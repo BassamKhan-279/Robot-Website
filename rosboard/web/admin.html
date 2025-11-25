@@ -26,7 +26,7 @@
         }
         
         main.mdl-layout__content {
-            background: #f5f5f5;
+            background: #2c2c2c;
             display: flex;
             justify-content: center;
             align-items: flex-start;
@@ -39,7 +39,7 @@
             padding: 30px;
             box-shadow: 0 4px 20px rgba(0,0,0,0.1);
             width: 90%;
-            max-width: 900px;
+            max-width: 1000px;
         }
         
         
@@ -151,6 +151,14 @@
             margin-top: 5px;
         }
         
+        .update-password-btn {
+            background-color: #ff9800;
+            color: white;
+            width: 100%;
+            padding: 8px 12px;
+            margin-top: 5px;
+        }
+        
         .delete-btn:hover { 
             background: rgba(255, 82, 82, 0.1); 
         }
@@ -193,6 +201,45 @@
             display: flex;
             flex-direction: column;
             gap: 5px;
+        }
+
+        /* Modal styling for password update */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 10% auto;
+            padding: 20px;
+            border-radius: 8px;
+            width: 400px;
+            max-width: 90%;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #666;
         }
 
         /* Fallback styles if Material Design Lite fails to load */
@@ -385,6 +432,26 @@
         </main>
     </div>
 
+    <!-- Password Update Modal -->
+    <div id="password-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Update Password</h3>
+                <button class="close-modal">&times;</button>
+            </div>
+            <form id="update-password-form">
+                <input type="hidden" id="update-user-id">
+                <div class="form-group">
+                    <label for="new-user-password">New Password:</label>
+                    <input type="password" id="new-user-password" name="password" placeholder="Enter new password" required>
+                </div>
+                <button type="submit" class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored">
+                    Update Password
+                </button>
+            </form>
+        </div>
+    </div>
+
     <div id="snackbar" class="mdl-js-snackbar mdl-snackbar">
         <div class="mdl-snackbar__text"></div>
         <button class="mdl-snackbar__action" type="button"></button>
@@ -407,6 +474,21 @@
             alert(message); // Fallback to alert if MDL snackbar not available
         };
 
+        // Modal functionality
+        const modal = document.getElementById('password-modal');
+        const closeModal = document.querySelector('.close-modal');
+        const updatePasswordForm = document.getElementById('update-password-form');
+
+        closeModal.addEventListener('click', function() {
+            modal.style.display = 'none';
+        });
+
+        window.addEventListener('click', function(event) {
+            if (event.target === modal) {
+                modal.style.display = 'none';
+            }
+        });
+
         const updateUserRole = (userId, newRole) => {
             fetch(`/api/users/${userId}/role`, { 
                 method: 'PUT', 
@@ -421,6 +503,24 @@
             .catch(error => { 
                 console.error("Error updating role:", error); 
                 showSnackbar(`Failed to update role: ${error.message}`, 6000); 
+            });
+        };
+
+        const updateUserPassword = (userId, newPassword) => {
+            fetch(`/api/users/${userId}/password`, { 
+                method: 'PUT', 
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ password: newPassword }) 
+            })
+            .then(response => { 
+                if (!response.ok) throw new Error('Password update failed on server.'); 
+                showSnackbar(`User password updated successfully.`); 
+                modal.style.display = 'none';
+            })
+            .catch(error => { 
+                console.error("Error updating password:", error); 
+                showSnackbar(`Failed to update password: ${error.message}`, 6000); 
             });
         };
 
@@ -461,6 +561,9 @@
                     <button class="mdl-button mdl-js-button mdl-button--raised update-role-btn" data-user-id="${user.id}">
                         Update Role
                     </button>
+                    <button class="mdl-button mdl-js-button mdl-button--raised update-password-btn" data-user-id="${user.id}" data-user-email="${user.email}">
+                        Update Password
+                    </button>
                     <button class="mdl-button mdl-js-button delete-btn" data-user-id="${user.id}" data-user-email="${user.email}">
                         Delete
                     </button>
@@ -475,6 +578,12 @@
             updateRoleButton.addEventListener('click', function() { 
                 const roleSelector = row.querySelector('.role-selector');
                 updateUserRole(this.getAttribute('data-user-id'), roleSelector.value); 
+            });
+
+            const updatePasswordButton = row.querySelector('.update-password-btn');
+            updatePasswordButton.addEventListener('click', function() { 
+                document.getElementById('update-user-id').value = this.getAttribute('data-user-id');
+                modal.style.display = 'block';
             });
             
             return row;
@@ -568,6 +677,20 @@
                     console.error('Error creating user:', error); 
                     showSnackbar(`Failed to create user: ${error.message}`, 6000); 
                 });
+            });
+
+            // Update password form
+            updatePasswordForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const userId = document.getElementById('update-user-id').value;
+                const newPassword = document.getElementById('new-user-password').value;
+                
+                if (newPassword.length < 6) {
+                    showSnackbar("Password must be at least 6 characters.", 3000);
+                    return;
+                }
+
+                updateUserPassword(userId, newPassword);
             });
         
         });
