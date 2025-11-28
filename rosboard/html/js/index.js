@@ -120,28 +120,55 @@ let onTopics = function(topics) {
   
   let topicTree = treeifyPaths(Object.keys(topics));
   
+  // Clear both robot sections
   $("#topics-nav-ros").empty();
-  $("#topics-nav-system").empty();
+  $("#topics-nav-ros2").empty();
   
-  addTopicTreeToNav(topicTree[0], $('#topics-nav-ros'));
-
-  $('<a></a>')
-  .addClass("mdl-navigation__link")
-  .click(() => { initSubscribe({topicName: "_dmesg", topicType: "rcl_interfaces/msg/Log"}); })
-  .text("dmesg")
-  .appendTo($("#topics-nav-system"));
-
-  $('<a></a>')
-  .addClass("mdl-navigation__link")
-  .click(() => { initSubscribe({topicName: "_top", topicType: "rosboard_msgs/msg/ProcessList"}); })
-  .text("Processes")
-  .appendTo($("#topics-nav-system"));
-
-  $('<a></a>')
-  .addClass("mdl-navigation__link")
-  .click(() => { initSubscribe({topicName: "_system_stats", topicType: "rosboard_msgs/msg/SystemStats"}); })
-  .text("System stats")
-  .appendTo($("#topics-nav-system"));
+  // Categorize topics between ROBOT 1 and ROBOT 2
+  let robot1Topics = [];
+  let robot2Topics = [];
+  
+  Object.keys(topics).forEach(topicName => {
+    // Define which topics go to which robot
+    // You can modify this logic based on your specific topic naming conventions
+    if (topicName.includes('/robot1/') || 
+        topicName === '/camera/rgb/image_color/compressed' ||
+        topicName === '/battery_voltages' ||
+        topicName === '/rtabmap/odom') {
+      robot1Topics.push(topicName);
+    } else if (topicName.includes('/robot2/')) {
+      robot2Topics.push(topicName);
+    } else {
+      // Default: put in ROBOT 1
+      robot1Topics.push(topicName);
+    }
+  });
+  
+  // Build topic trees for each robot
+  let robot1TopicTree = treeifyPaths(robot1Topics);
+  let robot2TopicTree = treeifyPaths(robot2Topics);
+  
+  // Add topics to ROBOT 1 section
+  if (robot1TopicTree.length > 0 && robot1TopicTree[0].children.length > 0) {
+    addTopicTreeToNav(robot1TopicTree[0], $('#topics-nav-ros'));
+  } else {
+    $('<div></div>')
+      .addClass("mdl-navigation__link")
+      .css({"opacity": "0.5", "font-style": "italic"})
+      .text("No topics available")
+      .appendTo($("#topics-nav-ros"));
+  }
+  
+  // Add topics to ROBOT 2 section
+  if (robot2TopicTree.length > 0 && robot2TopicTree[0].children.length > 0) {
+    addTopicTreeToNav(robot2TopicTree[0], $('#topics-nav-ros2'));
+  } else {
+    $('<div></div>')
+      .addClass("mdl-navigation__link")
+      .css({"opacity": "0.5", "font-style": "italic"})
+      .text("No topics available")
+      .appendTo($("#topics-nav-ros2"));
+  }
 }
 
 function addTopicTreeToNav(topicTree, el, level = 0, path = "") {
